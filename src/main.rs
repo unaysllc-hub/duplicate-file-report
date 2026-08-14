@@ -26,7 +26,10 @@ fn main() {
     }
     let report = scan(&roots, minimum_size);
     if json {
-        println!("{}", serde_json::to_string_pretty(&report).expect("report serialization failed"));
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&report).expect("report serialization failed")
+        );
     } else {
         println!(
             "Scanned {} files; found {} duplicate groups representing {} avoidable bytes.",
