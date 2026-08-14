@@ -31,7 +31,10 @@ pub fn scan(roots: &[PathBuf], minimum_size: u64) -> Report {
             match entry {
                 Ok(entry) if entry.file_type().is_file() => match entry.metadata() {
                     Ok(metadata) if metadata.len() >= minimum_size => {
-                        by_size.entry(metadata.len()).or_default().push(entry.into_path());
+                        by_size
+                            .entry(metadata.len())
+                            .or_default()
+                            .push(entry.into_path());
                         scanned_files += 1;
                     }
                     Ok(_) => scanned_files += 1,
@@ -54,15 +57,29 @@ pub fn scan(roots: &[PathBuf], minimum_size: u64) -> Report {
         }
         for (sha256, mut files) in by_hash.into_iter().filter(|(_, files)| files.len() > 1) {
             files.sort();
-            groups.push(DuplicateGroup { size, sha256, files });
+            groups.push(DuplicateGroup {
+                size,
+                sha256,
+                files,
+            });
         }
     }
-    groups.sort_by(|left, right| right.size.cmp(&left.size).then_with(|| left.sha256.cmp(&right.sha256)));
+    groups.sort_by(|left, right| {
+        right
+            .size
+            .cmp(&left.size)
+            .then_with(|| left.sha256.cmp(&right.sha256))
+    });
     let duplicate_bytes = groups
         .iter()
         .map(|group| group.size * (group.files.len() as u64 - 1))
         .sum();
-    Report { scanned_files, duplicate_bytes, groups, warnings }
+    Report {
+        scanned_files,
+        duplicate_bytes,
+        groups,
+        warnings,
+    }
 }
 
 fn hash_file(path: &Path) -> io::Result<String> {
